@@ -18,7 +18,15 @@
 		<license/>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<id>HAM</id>
+			<name>Hamza Amentag</name>
+			<email>hamza.amentag@hotmail.com</email>
+			<roles>
+				<role>coffee addict homosapien</role>
+			</roles>
+			<organization>Ostia Project</organization>
+		</developer>
 	</developers>
 	<scm>
 		<connection/>
