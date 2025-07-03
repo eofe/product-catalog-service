@@ -42,17 +42,56 @@ paths:
                 type: string
                 format: uri
         '400':
-          description: Invalid input
+          description: Malformed or invalid JSON input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/StandardErrorResponse'
+              example:
+                timestamp: "2025-06-01T15:00:00Z"
+                status: 400
+                error: Bad Request
+                message: Request body is invalid or malformed.
+                path: /categories
+        '405':
+          description: HTTP method not supported for this endpoint
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardErrorResponse'
+              example:
+                timestamp: "2025-06-01T15:00:00Z"
+                status: 405
+                error: Method Not Allowed
+                message: HTTP method not supported for this endpoint.
+                path: /categories
+        '422':
+          description: Validation failed for one or more fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                timestamp: "2025-06-01T15:00:00Z"
+                status: 422
+                error: Unprocessable Entity
+                message: Validation failed for one or more fields.
+                path: /categories
+                errors:
+                  - field: name
+                    message: Name must not be blank
         '500':
           description: Unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/StandardErrorResponse'
+              example:
+                timestamp: "2025-06-01T15:00:00Z"
+                status: 500
+                error: Internal Server Error
+                message: An unexpected error occurred.
+                path: /categories
 
 components:
   schemas:
@@ -71,17 +110,42 @@ components:
       xml:
         name: category
 
-    Error:
+    StandardErrorResponse:
       type: object
       properties:
         timestamp:
           type: string
           format: date-time
+          example: '2025-06-01T15:00:00Z'
         status:
-          type: string
+          type: integer
+          example: 400
         error:
           type: string
-        path:
-          type: string
+          example: Bad Request
         message:
           type: string
+          example: Request body is invalid or malformed.
+        path:
+          type: string
+          example: /categories
+
+    ValidationErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/StandardErrorResponse'
+        - type: object
+          properties:
+            errors:
+              type: array
+              items:
+                $ref: '#/components/schemas/FieldValidationError'
+
+    FieldValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: name
+        message:
+          type: string
+          example: Name must not be blank

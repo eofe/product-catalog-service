@@ -1,5 +1,7 @@
 package com.ostia.productcatalogservice.dto;
 
-public record CategoryDTO(String name,
+import jakarta.validation.constraints.NotBlank;
+
+public record CategoryDTO(@NotBlank String name,
                           String description) {
 }

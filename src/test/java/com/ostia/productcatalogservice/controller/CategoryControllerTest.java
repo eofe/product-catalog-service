@@ -1,16 +1,16 @@
 package com.ostia.productcatalogservice.controller;
 
 import com.ostia.productcatalogservice.common.ApiVersion;
+import com.ostia.productcatalogservice.exception.ErrorResponse;
+import com.ostia.productcatalogservice.util.MessageResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
+import java.util.Objects;
 import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,6 +19,9 @@ public class CategoryControllerTest {
 
     @Autowired
     TestRestTemplate restTemplate;
+
+    @Autowired
+    private MessageResolver messages;
 
     @LocalServerPort
     private int port;
@@ -61,6 +64,66 @@ public class CategoryControllerTest {
         // Validate UUID format
         assertThat(isValidUUID(uuid)).isTrue();
     }
+
+    @Test
+    void shouldReturnBadRequestErrorResponseForMalformedJsonPayload() {
+        // Arrange
+        String invalidPayload = """
+            {
+              "name": "Electronics"
+              "description": "Devices, gadgets, and tech accessories"
+            
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(invalidPayload, headers);
+
+        // Act
+        ResponseEntity<ErrorResponse> response = restTemplate.postForEntity("/api/v1/categories", request, ErrorResponse.class);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+
+        assertThat(body.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(body.getError()).isEqualTo(HttpStatus.BAD_REQUEST.getReasonPhrase());
+        assertThat(body.getMessage()).isEqualTo("Request JSON is malformed or invalid.");
+        assertThat(body.getPath()).isEqualTo("/api/v1/categories");
+        assertThat(body.getTimestamp()).isNotNull();
+    }
+
+    @Test
+    void shouldReturnUnprocessableEntityForInvalidCategoryPayload() {
+        // Arrange
+        String invalidPayload = """
+        {
+          "name": "",
+          "description": "Devices, gadgets, and tech accessories"
+        }
+    """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(invalidPayload, headers);
+
+        // Act
+        ResponseEntity<ErrorResponse> response = restTemplate.postForEntity("/api/v1/categories", request, ErrorResponse.class);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+
+        assertThat(body.getStatus()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY.value());
+        assertThat(body.getError()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase());
+
+        assertThat(body.getMessage()).contains("Validation failed for one or more fields.");
+        assertThat(body.getPath()).isEqualTo("/api/v1/categories");
+        assertThat(body.getTimestamp()).isNotNull();
+    }
+
 
     private static boolean isValidUUID(String str) {
         if (str == null) {

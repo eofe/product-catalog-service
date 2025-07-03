@@ -3,6 +3,7 @@ package com.ostia.productcatalogservice.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
@@ -10,11 +11,10 @@ import jakarta.validation.constraints.NotNull;
 public class Category extends BaseEntity{
 
     @Column(nullable = false, unique = true)
+    @NotBlank(message = "Name must not be blank")
     private String name;
 
-    @NotNull
     private String description;
-
 
     public String getName() {
         return name;
@@ -24,7 +24,7 @@ public class Category extends BaseEntity{
         this.name = name;
     }
 
-    public @NotNull String getDescription() {
+    public String getDescription() {
         return description;
     }
 

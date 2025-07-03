@@ -3,6 +3,7 @@ package com.ostia.productcatalogservice.controller;
 import com.ostia.productcatalogservice.common.ApiVersion;
 import com.ostia.productcatalogservice.dto.CategoryDTO;
 import com.ostia.productcatalogservice.service.CategoryService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +23,7 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createCategory(@RequestBody CategoryDTO categoryDTO, UriComponentsBuilder ucb) {
+    public ResponseEntity<String> createCategory(@Valid @RequestBody CategoryDTO categoryDTO, UriComponentsBuilder ucb) {
 
         var id = categoryService.addCategory(categoryDTO);
         URI locationOfNewCategory = ucb
