@@ -1,10 +1,11 @@
 package com.ostia.productcatalogservice.service;
 
 import com.ostia.productcatalogservice.dto.CategoryDTO;
-import com.ostia.productcatalogservice.exception.CategoryAlreadyExistsException;
+import com.ostia.productcatalogservice.exception.EntityAlreadyExistsException;
 import com.ostia.productcatalogservice.mapper.DomainMapper;
 import com.ostia.productcatalogservice.model.Category;
 import com.ostia.productcatalogservice.repository.CategoryRepository;
+import com.ostia.productcatalogservice.util.MessageResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +22,9 @@ public class CategoryServiceTest {
 
     @Mock
     CategoryRepository categoryRepository;
+
+    @Mock
+    MessageResolver messageResolver;
 
     @InjectMocks
     CategoryService categoryService;
@@ -62,7 +66,7 @@ public class CategoryServiceTest {
 
             // When + Then
             assertThatThrownBy(() -> categoryService.addCategory(dto))
-                    .isInstanceOf(CategoryAlreadyExistsException.class)
+                    .isInstanceOf(EntityAlreadyExistsException.class)
                     .hasMessage("Category with name 'Books' already exists");
 
             verify(categoryRepository, never()).save(any());

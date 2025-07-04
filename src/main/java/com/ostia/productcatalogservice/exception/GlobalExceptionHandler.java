@@ -56,6 +56,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(EntityAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleCategoryAlreadyExists(EntityAlreadyExistsException ex, HttpServletRequest request) {
+        log.error(messages.get("log.entity.exists"), ex.getMessage());
+
+        return buildErrorResponse(
+                request,
+                HttpStatus.CONFLICT,
+                messages.get("error.entity.exists", ex.getEntityName(), ex.getFieldName(), ex.getFieldValue())
+        );
+    }
+
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpServletRequest request, HttpStatus status, String message, List<ValidationError> errors) {
         ValidationErrorResponse response = new ValidationErrorResponse(
                 status.value(),
@@ -77,6 +88,3 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(response);
     }
 }
-
-
-
