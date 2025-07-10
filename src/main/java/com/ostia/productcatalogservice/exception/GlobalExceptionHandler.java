@@ -67,6 +67,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex, HttpServletRequest request) {
+        log.error(messages.get("log.entity.notfound"), ex.getEntityName(), ex.getFieldName(), ex.getFieldValue());
+
+        return buildErrorResponse(
+                request,
+                HttpStatus.NOT_FOUND,
+                messages.get("error.entity.notfound", ex.getEntityName(), ex.getFieldName(), ex.getFieldValue())
+        );
+    }
+
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpServletRequest request, HttpStatus status, String message, List<ValidationError> errors) {
         ValidationErrorResponse response = new ValidationErrorResponse(
                 status.value(),

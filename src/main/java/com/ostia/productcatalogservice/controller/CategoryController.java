@@ -5,10 +5,7 @@ import com.ostia.productcatalogservice.dto.CategoryDTO;
 import com.ostia.productcatalogservice.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 
@@ -31,5 +28,11 @@ public class CategoryController {
                 .buildAndExpand(id)
                 .toUri();
         return ResponseEntity.created(locationOfNewCategory).build();
+    }
+
+    @GetMapping
+    public ResponseEntity<CategoryDTO> getCategory(@RequestParam String name) {
+
+       return ResponseEntity.ok(categoryService.getCategory(name));
     }
 }

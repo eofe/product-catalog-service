@@ -1,8 +1,9 @@
 package com.ostia.productcatalogservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ostia.productcatalogservice.common.ApiVersion;
 import com.ostia.productcatalogservice.exception.ErrorResponse;
-import com.ostia.productcatalogservice.util.MessageResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class CategoryControllerTest {
     TestRestTemplate restTemplate;
 
     @Autowired
-    private MessageResolver messages;
+    private ObjectMapper mapper;
 
     @LocalServerPort
     private int port;
@@ -72,7 +73,6 @@ public class CategoryControllerTest {
             {
               "name": "Electronics"
               "description": "Devices, gadgets, and tech accessories"
-            
         """;
 
         HttpHeaders headers = new HttpHeaders();
@@ -124,6 +124,57 @@ public class CategoryControllerTest {
         assertThat(body.getTimestamp()).isNotNull();
     }
 
+    @Test
+    void shouldGetCategory() throws JsonProcessingException {
+        // Arrange and act
+        var response = restTemplate.exchange(
+                productEndpoint + "?name=" + "Books",
+                HttpMethod.GET,
+                null,
+                String.class);
+
+        // Assert
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        // Parse raw JSON body
+        var body = mapper.readTree(response.getBody());
+
+        // Extract fields
+        String name = body.get("name").asText();
+        String description = body.get("description").asText();
+
+        assertThat(name).isEqualTo("Books");
+        assertThat(description).isEqualTo("Fiction, non-fiction, academic, and more");
+    }
+
+    @Test
+    void shouldThrowEntityNotFoundWhenCategoryNotExist() throws JsonProcessingException {
+
+        var response = restTemplate.exchange(
+                productEndpoint + "?name=France",
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        // Parse raw JSON body
+        var body = mapper.readTree(response.getBody());
+
+        // Extract fields
+        int status = body.get("status").asInt();
+        String error = body.get("error").asText();
+        String message = body.get("message").asText();
+        String path = body.get("path").asText();
+
+        assertThat(status).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(error).isEqualTo("Not Found");
+        assertThat(message).isEqualTo("Category with name France does not exist.");
+        assertThat(path).isEqualTo("/api/v1/categories");
+    }
 
     private static boolean isValidUUID(String str) {
         if (str == null) {

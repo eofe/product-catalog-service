@@ -18,4 +18,13 @@ public class DomainMapper {
 
         return category;
     }
+
+    public static CategoryDTO EntityToDTO(Category category) {
+
+        if(Objects.isNull(category)) {
+            throw new IllegalArgumentException("The category entity is null");
+        }
+
+        return new CategoryDTO(category.getName(), category.getDescription());
+    }
 }

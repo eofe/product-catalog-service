@@ -2,10 +2,10 @@ package com.ostia.productcatalogservice.service;
 
 import com.ostia.productcatalogservice.dto.CategoryDTO;
 import com.ostia.productcatalogservice.exception.EntityAlreadyExistsException;
+import com.ostia.productcatalogservice.exception.EntityNotFoundException;
 import com.ostia.productcatalogservice.mapper.DomainMapper;
 import com.ostia.productcatalogservice.model.Category;
 import com.ostia.productcatalogservice.repository.CategoryRepository;
-import com.ostia.productcatalogservice.util.MessageResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,9 +22,6 @@ public class CategoryServiceTest {
 
     @Mock
     CategoryRepository categoryRepository;
-
-    @Mock
-    MessageResolver messageResolver;
 
     @InjectMocks
     CategoryService categoryService;
@@ -71,5 +68,47 @@ public class CategoryServiceTest {
 
             verify(categoryRepository, never()).save(any());
         }
+    }
+
+    @Test
+    void shouldGetCategoryWhenCategoryExists() {
+        // Given
+        Category category = new Category();
+        category.setName("Books");
+        category.setDescription("Books desc");
+
+        CategoryDTO dto = DomainMapper.EntityToDTO(category);
+
+        try (MockedStatic<DomainMapper> mockMapper = mockStatic(DomainMapper.class)) {
+            mockMapper.when(() -> DomainMapper.EntityToDTO(category)).thenReturn(dto);
+            when(categoryRepository.existsByName("Books")).thenReturn(true);
+            when(categoryRepository.findByName("Books")).thenReturn(category);
+
+            // When
+            var retrievedCategory = categoryService.getCategory("Books");
+
+            // Then
+            assertThat(retrievedCategory).isNotNull();
+            assertThat(retrievedCategory.name()).isEqualTo("Books");
+            assertThat(retrievedCategory.description()).isEqualTo("Books desc");
+
+            verify(categoryRepository).existsByName("Books");
+            verify(categoryRepository).findByName("Books");
+        }
+    }
+
+    @Test
+    void shouldThrowEntityNotFoundExceptionWhenCategoryDoesNotExist() {
+        // Given
+        String categoryName = "Books";
+        when(categoryRepository.existsByName(categoryName)).thenReturn(false);
+
+        // When + Then
+        assertThatThrownBy(() -> categoryService.getCategory(categoryName))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("Category entity with name 'Books' does not exist");
+
+        verify(categoryRepository).existsByName(categoryName);
+        verify(categoryRepository, never()).findByName(any());
     }
 }
