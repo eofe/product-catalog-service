@@ -1,6 +1,6 @@
 # 🛒 Product Catalog Service
 
-> ⚠️ This is a side project I'm building to explore Contract-First and Test-Driven Development using Spring Boot.
+> ⚠️ This is a side project I'm building using Contract-First and Test-Driven Development using Spring Boot.
 
 A backend microservice for managing product categories, built using Spring Boot. This service is part of the **Ostia** side project.
 
