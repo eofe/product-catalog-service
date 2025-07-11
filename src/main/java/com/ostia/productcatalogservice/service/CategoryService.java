@@ -37,4 +37,13 @@ public class CategoryService {
         }
         throw new EntityNotFoundException("Category", "name", catName);
     }
+
+    @Transactional
+    public void deleteCategory(String catName){
+
+        if(!categoryRepository.existsByName(catName)){
+            throw new EntityNotFoundException("Category", "name", catName);
+        }
+        categoryRepository.deleteByName(catName);
+    }
 }

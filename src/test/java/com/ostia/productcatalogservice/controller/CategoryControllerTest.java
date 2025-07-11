@@ -149,6 +149,20 @@ public class CategoryControllerTest {
     }
 
     @Test
+    void shouldDeleteCategory() {
+        // Arrange and act
+        var response = restTemplate.exchange(
+                productEndpoint + "?name=" + "Video Games",
+                HttpMethod.DELETE,
+                null,
+                String.class);
+
+        // Assert
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
     void shouldThrowEntityNotFoundWhenCategoryNotExist() throws JsonProcessingException {
 
         var response = restTemplate.exchange(
