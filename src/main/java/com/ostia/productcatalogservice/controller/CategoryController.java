@@ -35,4 +35,10 @@ public class CategoryController {
 
        return ResponseEntity.ok(categoryService.getCategory(name));
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteCategory(@RequestParam String name) {
+        categoryService.deleteCategory(name);
+        return ResponseEntity.noContent().build();
+    }
 }

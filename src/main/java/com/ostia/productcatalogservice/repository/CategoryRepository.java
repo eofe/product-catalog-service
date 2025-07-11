@@ -8,4 +8,5 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
     boolean existsByName(String name);
     Category findByName(String name);
+    void deleteByName(String name);
 }

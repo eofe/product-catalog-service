@@ -41,6 +41,14 @@ paths:
               schema:
                 type: string
                 format: uri
+        '204':
+          description: Category deleted successfully with no content in response
+          headers:
+            Location:
+              description: URI of the deleted category
+              schema:
+                type: string
+                format: uri
         '400':
           description: Malformed or invalid JSON input
           content:
