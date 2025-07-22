@@ -5,11 +5,11 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MessageResolver {
+public class CustomMessageResolver {
 
     private final MessageSource messageSource;
 
-    public MessageResolver(MessageSource messageSource) {
+    public CustomMessageResolver(MessageSource messageSource) {
         this.messageSource = messageSource;
     }
 
