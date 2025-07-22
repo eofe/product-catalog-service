@@ -1,9 +1,18 @@
 package com.ostia.productcatalogservice.controller;
 
+import com.ostia.productcatalogservice.assembler.CategoryModelAssembler;
 import com.ostia.productcatalogservice.common.ApiVersion;
 import com.ostia.productcatalogservice.dto.CategoryDTO;
+import com.ostia.productcatalogservice.dto.UpdateCategoryDTO;
 import com.ostia.productcatalogservice.service.CategoryService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -14,9 +23,11 @@ import java.net.URI;
 public class CategoryController {
     public static final String CATEGORIES_PATH = "categories/";
     private final CategoryService categoryService;
+    private final CategoryModelAssembler categoryModelAssembler;
 
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, CategoryModelAssembler categoryModelAssembler) {
         this.categoryService = categoryService;
+        this.categoryModelAssembler = categoryModelAssembler;
     }
 
     @PostMapping
@@ -30,8 +41,8 @@ public class CategoryController {
         return ResponseEntity.created(locationOfNewCategory).build();
     }
 
-    @GetMapping
-    public ResponseEntity<CategoryDTO> getCategory(@RequestParam String name) {
+    @GetMapping("/{name}")
+    public ResponseEntity<CategoryDTO> getCategory(@PathVariable String name) {
 
        return ResponseEntity.ok(categoryService.getCategory(name));
     }
@@ -40,5 +51,23 @@ public class CategoryController {
     public ResponseEntity<Void> deleteCategory(@RequestParam String name) {
         categoryService.deleteCategory(name);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{name}")
+    public ResponseEntity<Void> updateCategory(@PathVariable String name,
+                                               @Valid @RequestBody UpdateCategoryDTO dto) {
+        categoryService.updateCategory(name, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<PagedModel<EntityModel<CategoryDTO>>> getAllCategories(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) int size,
+            PagedResourcesAssembler<CategoryDTO> assembler) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CategoryDTO> result = categoryService.getAllCategories(pageable);
+        return ResponseEntity.ok(assembler.toModel(result, categoryModelAssembler));
     }
 }

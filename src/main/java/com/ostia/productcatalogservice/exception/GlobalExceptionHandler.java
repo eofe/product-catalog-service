@@ -1,6 +1,6 @@
 package com.ostia.productcatalogservice.exception;
 
-import com.ostia.productcatalogservice.util.MessageResolver;
+import com.ostia.productcatalogservice.util.CustomMessageResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +17,9 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    private final MessageResolver messages;
+    private final CustomMessageResolver messages;
 
-    public GlobalExceptionHandler(MessageResolver messages) {
+    public GlobalExceptionHandler(CustomMessageResolver messages) {
         this.messages = messages;
     }
 
