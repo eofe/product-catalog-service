@@ -33,6 +33,7 @@ public class CategoryService {
         throw new EntityAlreadyExistsException("Category", "name", category.getName());
     }
 
+    @Transactional(readOnly = true)
     public CategoryDTO getCategory(String catName) {
 
         if (categoryRepository.existsByName(catName)) {
@@ -50,6 +51,7 @@ public class CategoryService {
         categoryRepository.deleteByName(catName);
     }
 
+    @Transactional
     public void updateCategory(String name, UpdateCategoryDTO dto) {
         var category = categoryRepository.findByNameIgnoreCase(name)
                 .orElseThrow(() -> new EntityNotFoundException("Category", "name", name));
@@ -58,6 +60,7 @@ public class CategoryService {
         categoryRepository.save(category);
     }
 
+    @Transactional(readOnly = true)
     public Page<CategoryDTO> getAllCategories(Pageable pageable) {
         return categoryRepository.findAll(pageable)
                 .map(DomainMapper::EntityToDTO);
