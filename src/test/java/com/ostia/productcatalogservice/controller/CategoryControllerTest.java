@@ -11,8 +11,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
+
 import java.util.Objects;
 import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -31,7 +33,7 @@ public class CategoryControllerTest {
 
     @BeforeEach
     public void setUp() {
-        productEndpoint = "http://localhost:" + port + "/" + ApiVersion.V1 +"/categories";
+        productEndpoint = "http://localhost:" + port + "/" + ApiVersion.V1 + "/categories";
     }
 
     @Test
@@ -39,11 +41,11 @@ public class CategoryControllerTest {
 
         // Arrange
         String json = """
-                {
-                  "name": "blabla",
-                  "description": "Devices, gadgets, and accessories"
-                }
-            """;
+                    {
+                      "name": "blabla",
+                      "description": "Devices, gadgets, and accessories"
+                    }
+                """;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -70,10 +72,10 @@ public class CategoryControllerTest {
     void shouldReturnBadRequestErrorResponseForMalformedJsonPayload() {
         // Arrange
         String invalidPayload = """
-            {
-              "name": "Electronics"
-              "description": "Devices, gadgets, and tech accessories"
-        """;
+                    {
+                      "name": "Electronics"
+                      "description": "Devices, gadgets, and tech accessories"
+                """;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -98,11 +100,11 @@ public class CategoryControllerTest {
     void shouldReturnUnprocessableEntityForInvalidCategoryPayload() {
         // Arrange
         String invalidPayload = """
-        {
-          "name": "",
-          "description": "Devices, gadgets, and tech accessories"
-        }
-    """;
+                    {
+                      "name": "",
+                      "description": "Devices, gadgets, and tech accessories"
+                    }
+                """;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -128,7 +130,7 @@ public class CategoryControllerTest {
     void shouldGetCategory() throws JsonProcessingException {
         // Arrange and act
         var response = restTemplate.exchange(
-                productEndpoint + "?name=" + "Books",
+                productEndpoint + "/" + "Books",
                 HttpMethod.GET,
                 null,
                 String.class);
@@ -166,7 +168,7 @@ public class CategoryControllerTest {
     void shouldThrowEntityNotFoundWhenCategoryNotExist() throws JsonProcessingException {
 
         var response = restTemplate.exchange(
-                productEndpoint + "?name=France",
+                productEndpoint + "/France",
                 HttpMethod.GET,
                 null,
                 String.class
@@ -187,7 +189,7 @@ public class CategoryControllerTest {
         assertThat(status).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(error).isEqualTo("Not Found");
         assertThat(message).isEqualTo("Category with name France does not exist.");
-        assertThat(path).isEqualTo("/api/v1/categories");
+        assertThat(path).isEqualTo("/api/v1/categories/France");
     }
 
     private static boolean isValidUUID(String str) {
@@ -200,5 +202,129 @@ public class CategoryControllerTest {
         } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    @Test
+    void shouldReturnPaginatedCategoriesWithHateoasLinks() throws JsonProcessingException {
+        // Arrange
+        String url = productEndpoint + "?page=0&size=2";
+
+        // Act
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        var root = mapper.readTree(response.getBody());
+
+        assertThat(root.has("_embedded")).isTrue();
+        assertThat(root.path("_embedded").has("categoryDTOList")).isTrue();
+        assertThat(root.has("_links")).isTrue();
+        assertThat(root.path("page").get("size").asInt()).isEqualTo(2);
+
+        var firstCategory = root.path("_embedded").path("categoryDTOList").get(0);
+        assertThat(firstCategory.has("name")).isTrue();
+        assertThat(firstCategory.has("_links")).isTrue();
+        assertThat(firstCategory.path("_links").has("self")).isTrue();
+    }
+
+    @Test
+    void shouldReturnBadRequestForInvalidPaginationParams() throws JsonProcessingException {
+        // Act
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                productEndpoint + "?page=-1&size=-10",
+                HttpMethod.GET,
+                null,
+                ErrorResponse.class
+        );
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+        ErrorResponse body = Objects.requireNonNull(response.getBody());
+        assertThat(body.getStatus()).isEqualTo(400);
+        assertThat(body.getError()).isEqualTo("Bad Request");
+        assertThat(body.getPath()).isEqualTo("/api/v1/categories");
+        assertThat(body.getTimestamp()).isNotNull();
+    }
+
+    @Test
+    void shouldHandleUnexpectedError() throws JsonProcessingException {
+        // Act
+        ResponseEntity<String> response = restTemplate.exchange(
+                productEndpoint + "?page=notANumber",
+                HttpMethod.GET,
+                null,
+                String.class
+        );
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+        var root = mapper.readTree(response.getBody());
+        assertThat(root.get("status").asInt()).isEqualTo(400);
+        assertThat(root.get("error").asText()).contains("Bad Request");
+    }
+
+    @Test
+    void shouldUpdateCategory() {
+        // Arrange
+        String name = "Music";
+        String updatePayload = """
+                    {
+                      "description": "Updated description for music"
+                    }
+                """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(updatePayload, headers);
+
+        // Act
+        ResponseEntity<Void> response = restTemplate.exchange(
+                productEndpoint + "/" + name,
+                HttpMethod.PUT,
+                request,
+                Void.class
+        );
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void shouldReturnUnprocessableEntityWhenUpdateDescriptionIsBlank() throws JsonProcessingException {
+        // Arrange
+        String name = "Music";
+        String invalidPayload = """
+                    {
+                      "description": ""
+                    }
+                """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(invalidPayload, headers);
+
+        // Act
+        ResponseEntity<String> response = restTemplate.exchange(
+                productEndpoint + "/" + name,
+                HttpMethod.PUT,
+                request,
+                String.class
+        );
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        var body = mapper.readTree(response.getBody());
+
+        assertThat(body.get("status").asInt()).isEqualTo(422);
+        assertThat(body.get("error").asText()).isEqualTo("Unprocessable Entity");
+        assertThat(body.get("message").asText()).contains("Validation failed");
+        assertThat(body.get("path").asText()).isEqualTo("/api/v1/categories/" + name);
+        assertThat(body.path("errors").isArray()).isTrue();
+        assertThat(body.path("errors").get(0).get("field").asText()).isEqualTo("description");
+        assertThat(body.path("errors").get(0).get("message").asText()).isEqualTo("must not be blank");
     }
 }
