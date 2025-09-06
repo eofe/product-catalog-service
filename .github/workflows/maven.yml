@@ -27,11 +27,11 @@ jobs:
     - name: Build with Maven
       run: ./mvnw clean package -DskipTests
 
-    - name: Log in to GitHub Container Registry
-      run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
     - name: Build Docker image
-      run: docker build -t ghcr.io/${{ secrets.GHCR_USERNAME }}/product-catalog-service:latest .
+      run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/product-catalog-service:latest .
 
-    - name: Push Docker image to GHCR
-      run: docker push ghcr.io/${{ secrets.GHCR_USERNAME }}/product-catalog-service:latest
+    - name: Push Docker image to Docker Hub
+      run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/product-catalog-service:latest
