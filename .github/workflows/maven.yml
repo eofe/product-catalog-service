@@ -34,4 +34,4 @@ jobs:
       run: docker build -t amentag/product-catalog-service:latest .
 
     - name: Push Docker image to Docker Hub
-      run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/product-catalog-service:latest
+      run: docker push amentag/product-catalog-service:latest
