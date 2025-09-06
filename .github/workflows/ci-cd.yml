@@ -31,7 +31,7 @@ jobs:
       run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
     - name: Build Docker image
-      run: docker build -t ${{ env.DOCKER_NAMESPACE }}/product-catalog-service:latest .
+      run: docker build -t ${{ vars.DOCKER_NAMESPACE }}/product-catalog-service:latest .
 
     - name: Push Docker image to Docker Hub
       run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/product-catalog-service:latest
