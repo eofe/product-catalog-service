@@ -31,17 +31,7 @@ jobs:
       run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
     - name: Build Docker image
-      env:
-        USER_LOWER: ${{ toLower(secrets.DOCKER_HUB_USERNAME) }}
-      run: |
-        IMAGE="${REGISTRY}/${USER_LOWER}/${IMAGE_REPO}:latest"
-        echo "Building $IMAGE"
-        docker build -t "$IMAGE" .
+      run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/product-catalog-service:latest .
 
-    - name: Push Docker image
-      env:
-        USER_LOWER: ${{ toLower(secrets.DOCKER_HUB_USERNAME) }}
-      run: |
-        IMAGE="${REGISTRY}/${USER_LOWER}/${IMAGE_REPO}:latest"
-        echo "Pushing $IMAGE"
-        docker push "$IMAGE"
+    - name: Push Docker image to Docker Hub
+      run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/product-catalog-service:latest
