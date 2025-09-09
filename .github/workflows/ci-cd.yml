@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Docker
+      
       DOCKER_IMAGE: ${{ vars.DOCKER_NAMESPACE }}/product-catalog-service:latest
-      # AWS / ECS
+      
       ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
       ECS_SERVICE: ${{ vars.ECS_SERVICE }}
 
@@ -45,8 +45,7 @@ jobs:
 
       - name: Push Docker image to Docker Hub
         run: docker push "$DOCKER_IMAGE"
-
-      # Deploy only on push to master
+        
       - name: Configure AWS credentials
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: aws-actions/configure-aws-credentials@v4
