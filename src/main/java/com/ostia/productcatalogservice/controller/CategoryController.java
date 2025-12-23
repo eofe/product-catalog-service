@@ -14,6 +14,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
@@ -30,6 +31,7 @@ public class CategoryController {
         this.categoryModelAssembler = categoryModelAssembler;
     }
 
+    @PreAuthorize("hasRole('PRODUCT_CATALOG_MANAGER')")
     @PostMapping
     public ResponseEntity<String> createCategory(@Valid @RequestBody CategoryDTO categoryDTO, UriComponentsBuilder ucb) {
 
@@ -41,18 +43,21 @@ public class CategoryController {
         return ResponseEntity.created(locationOfNewCategory).build();
     }
 
+    @PreAuthorize("hasRole('PRODUCT_CATALOG_MANAGER')")
     @GetMapping("/{name}")
     public ResponseEntity<CategoryDTO> getCategory(@PathVariable String name) {
 
        return ResponseEntity.ok(categoryService.getCategory(name));
     }
 
+    @PreAuthorize("hasRole('PRODUCT_CATALOG_MANAGER')")
     @DeleteMapping
     public ResponseEntity<Void> deleteCategory(@RequestParam String name) {
         categoryService.deleteCategory(name);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('PRODUCT_CATALOG_MANAGER')")
     @PutMapping("/{name}")
     public ResponseEntity<Void> updateCategory(@PathVariable String name,
                                                @Valid @RequestBody UpdateCategoryDTO dto) {
@@ -60,6 +65,7 @@ public class CategoryController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('PRODUCT_CATALOG_MANAGER')")
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<CategoryDTO>>> getAllCategories(
             @RequestParam(defaultValue = "0") @Min(0) int page,
